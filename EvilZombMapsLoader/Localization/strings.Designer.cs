@@ -22,7 +22,7 @@ namespace EvilZombMapsLoader.Localization {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class strings {
+    public class strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace EvilZombMapsLoader.Localization {
         ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("EvilZombMapsLoader.Localization.strings", typeof(strings).Assembly);
@@ -51,7 +51,7 @@ namespace EvilZombMapsLoader.Localization {
         ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -61,11 +61,56 @@ namespace EvilZombMapsLoader.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Прервать загрузку.
+        /// </summary>
+        public static string CancelLoad {
+            get {
+                return ResourceManager.GetString("CancelLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Текущее состояние: {0}.
+        /// </summary>
+        public static string CurrentState {
+            get {
+                return ResourceManager.GetString("CurrentState", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Загрузить.
+        /// </summary>
+        public static string Load {
+            get {
+                return ResourceManager.GetString("Load", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на EvilZOMB Maps Info (by CauMoH) {0}.{1}.{2}.
         /// </summary>
-        internal static string MainTitle {
+        public static string MainTitle {
             get {
                 return ResourceManager.GetString("MainTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Количество карт: {0}.
+        /// </summary>
+        public static string MapsCount {
+            get {
+                return ResourceManager.GetString("MapsCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Карт без скриншота: {0}.
+        /// </summary>
+        public static string MapsNoImageCount {
+            get {
+                return ResourceManager.GetString("MapsNoImageCount", resourceCulture);
             }
         }
     }

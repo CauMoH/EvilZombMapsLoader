@@ -4,7 +4,9 @@
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:behaviors="clr-namespace:EvilZombMapsLoader.Behaviors"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:enums="clr-namespace:EvilZombMapsLoader.Enums"
         xmlns:items="clr-namespace:EvilZombMapsLoader.ViewModels.Items"
+        xmlns:localization="clr-namespace:EvilZombMapsLoader.Localization"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:EvilZombMapsLoader.ViewModels"
         Title="{Binding Title}"
@@ -23,30 +25,58 @@
 
         <StackPanel Grid.Row="0"
                     Margin="5"
-                    Orientation="Horizontal">
+                    Orientation="Vertical">
 
-            <Button HorizontalAlignment="Left"
-                    Command="{Binding LoadMapsCommand}"
-                    Content="Загрузить"
-                    IsEnabled="{Binding CanLoad}" />
+            <StackPanel Orientation="Horizontal">
+                <Button Width="150"
+                        HorizontalAlignment="Left"
+                        Command="{Binding ChangeLoadProcessCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="IsEnabled" Value="True" />
+                            <Setter Property="Content" Value="{x:Static localization:strings.Load}" />
+                            <Setter Property="CommandParameter" Value="{x:Static enums:LoadProcessStates.ReadyToLoading}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentState}" Value="{x:Static enums:LoadProcessStates.Loading}">
+                                    <Setter Property="CommandParameter" Value="{x:Static enums:LoadProcessStates.Cancel}" />
+                                    <Setter Property="Content" Value="{x:Static localization:strings.CancelLoad}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentState}" Value="{x:Static enums:LoadProcessStates.Cancel}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
 
-            <TextBlock Margin="5,0,0,0"
-                       VerticalAlignment="Center"
-                       FontWeight="DemiBold"
-                       Text="{Binding MapsCounter, StringFormat=Количество карт: {0}}" />
+                <ProgressBar Width="200"
+                             Margin="10,0,0,0"
+                             Maximum="{Binding NumberMapsToDownload}"
+                             Value="{Binding Maps.Count, Mode=OneWay}" />
 
-            <Line Margin="5,0,5,0"
-                  VerticalAlignment="Center"
-                  Stroke="Black"
-                  X1="0"
-                  X2="0"
-                  Y1="0"
-                  Y2="15" />
+                <TextBlock Margin="5,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="{Binding CurrentState, StringFormat={x:Static localization:strings.CurrentState}, Converter={StaticResource EnumConverter}}" />
 
-            <TextBlock VerticalAlignment="Center"
-                       FontWeight="DemiBold"
-                       Text="{Binding NoMapImageCounter, StringFormat=Карт без скриншота: {0}}" />
+            </StackPanel>
 
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                <TextBlock VerticalAlignment="Center"
+                           FontWeight="DemiBold"
+                           Text="{Binding Maps.Count, Mode=OneWay, StringFormat={x:Static localization:strings.MapsCount}}" />
+
+                <Line Margin="5,0,5,0"
+                      VerticalAlignment="Center"
+                      Stroke="Black"
+                      X1="0"
+                      X2="0"
+                      Y1="0"
+                      Y2="15" />
+
+                <TextBlock VerticalAlignment="Center"
+                           FontWeight="DemiBold"
+                           Text="{Binding MapsWithoutImages, StringFormat={x:Static localization:strings.MapsNoImageCount}}" />
+            </StackPanel>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1"

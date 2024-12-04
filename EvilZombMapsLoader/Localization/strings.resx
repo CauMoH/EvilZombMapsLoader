@@ -120,4 +120,19 @@
   <data name="MainTitle" xml:space="preserve">
     <value>EvilZOMB Maps Info (by CauMoH) {0}.{1}.{2}</value>
   </data>
+  <data name="Load" xml:space="preserve">
+    <value>Загрузить</value>
+  </data>
+  <data name="MapsCount" xml:space="preserve">
+    <value>Количество карт: {0}</value>
+  </data>
+  <data name="MapsNoImageCount" xml:space="preserve">
+    <value>Карт без скриншота: {0}</value>
+  </data>
+  <data name="CancelLoad" xml:space="preserve">
+    <value>Прервать загрузку</value>
+  </data>
+  <data name="CurrentState" xml:space="preserve">
+    <value>Текущее состояние: {0}</value>
+  </data>
 </root>

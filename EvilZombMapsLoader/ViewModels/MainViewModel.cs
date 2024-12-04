@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
+using EvilZombMapsLoader.Enums;
+using EvilZombMapsLoader.Helpers;
 using EvilZombMapsLoader.ViewModels.Items;
 using HtmlAgilityPack;
 using Prism.Commands;
@@ -24,10 +26,12 @@ namespace EvilZombMapsLoader.ViewModels
         {
             "(Unaccounted)"
         };
-        private bool _canLoad = true;
-        private int _mapsCounter;
-        private int _noMapImageCounter;
+        private int _mapsWithoutImages;
         private readonly HtmlWeb _htmlWeb = new HtmlWeb();
+
+        private LoadProcessStates _currentState = LoadProcessStates.Unknown;
+
+        private int _numberMapsToDownload = 1;
 
         #endregion
 
@@ -43,26 +47,26 @@ namespace EvilZombMapsLoader.ViewModels
             }
         }
 
-        public bool CanLoad
+        public int NumberMapsToDownload
         {
-            get => _canLoad;
-            set => SetProperty(ref _canLoad, value);
+            get => _numberMapsToDownload;
+            set => SetProperty(ref _numberMapsToDownload, value);
         }
-
-        public int NoMapImageCounter
+        
+        public int MapsWithoutImages
         {
-            get => _noMapImageCounter;
-            private set => SetProperty(ref _noMapImageCounter, value);
+            get => _mapsWithoutImages;
+            private set => SetProperty(ref _mapsWithoutImages, value);
         }
-
-        public int MapsCounter
-        {
-            get => _mapsCounter;
-            private set => SetProperty(ref _mapsCounter, value);
-        }
-
+        
         public ObservableCollection<MapItem> Maps { get; } = new ObservableCollection<MapItem>();
 
+        public LoadProcessStates CurrentState
+        {
+            get => _currentState;
+            private set => SetProperty(ref _currentState, value, State_OnChanged);
+        }
+        
         #endregion
 
         public MainViewModel()
@@ -75,9 +79,9 @@ namespace EvilZombMapsLoader.ViewModels
         private async void Load()
         {
             Maps.Clear();
-            MapsCounter = 0;
-            NoMapImageCounter = 0;
-            CanLoad = false;
+            MapsWithoutImages = 0;
+            NumberMapsToDownload = 1;
+            CurrentState = LoadProcessStates.Loading;
 
             await Task.Run(() =>
             {
@@ -88,14 +92,36 @@ namespace EvilZombMapsLoader.ViewModels
 
                     var rows = mapsDoc.DocumentNode.SelectNodes("//table[@class='data-table']//tr//td[@class='bg2']//a");
 
+                    UiInvoker.Invoke(() =>
+                    {
+                        NumberMapsToDownload = rows.Count;
+                    });
+
                     for (var index = 0; index < rows.Count; index++)
                     {
+                        if (CurrentState == LoadProcessStates.Cancel)
+                        {
+                            UiInvoker.Invoke(() =>
+                            {
+                                CurrentState = LoadProcessStates.Canceled;
+                            });
+
+                            return;
+                        }
+
                         var row = rows[index];
                         var mapName = row.InnerText;
 
                         var isIgnore = _ignoreMaps.Any(ignoreMap => mapName.Contains(ignoreMap));
                         if (isIgnore)
+                        {
+                            UiInvoker.Invoke(() =>
+                            {
+                                NumberMapsToDownload--;
+                            });
+
                             continue;
+                        }
 
                         var mapPage = BaseUrlStr +
                                       row.GetAttributeValue("href", string.Empty).Replace("amp;", string.Empty);
@@ -106,30 +132,49 @@ namespace EvilZombMapsLoader.ViewModels
                         {
                             imageUrl = BaseUrlStr + imageNode.GetAttributeValue("src", string.Empty).TrimStart('.');
                         }
-
-                        Application.Current.Dispatcher.Invoke(() => { MapsCounter++; });
-
+                        
                         if (imageUrl.Contains(NoMapImage))
                         {
-                            Application.Current.Dispatcher.Invoke(() => { NoMapImageCounter++; });
+                            UiInvoker.Invoke(() =>
+                            {
+                                MapsWithoutImages++;
+                            });
                         }
 
                         var index1 = index;
-                        Application.Current.Dispatcher.Invoke(() => { Maps.Add(new MapItem(index1 + 1, mapName, imageUrl)); });
+                        UiInvoker.Invoke(() =>
+                        {
+                            Maps.Add(new MapItem(index1 + 1, mapName, imageUrl));
+                        });
                     }
+
+                    UiInvoker.Invoke(() =>
+                    {
+                        CurrentState = LoadProcessStates.Loaded;
+                    });
                 }
                 catch
                 {
-                    //ignore   
-                }
-                finally
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    UiInvoker.Invoke(() =>
                     {
-                        CanLoad = true;
+                        CurrentState = LoadProcessStates.LoadedWithError;
                     });
                 }
             });
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void State_OnChanged()
+        {
+            switch (CurrentState)
+            {
+                case LoadProcessStates.ReadyToLoading:
+                    Load();
+                    break;
+            }
         }
 
         #endregion
@@ -138,26 +183,27 @@ namespace EvilZombMapsLoader.ViewModels
 
         private void InitCommands()
         {
-            LoadMapsCommand = new DelegateCommand(LoadMapsExecute);
+            ChangeLoadProcessCommand = new DelegateCommand<LoadProcessStates?>(ChangeLoadProcessExecute);
         }
 
         #region Props
 
-        public ICommand LoadMapsCommand { get; private set; }
+        public ICommand ChangeLoadProcessCommand { get; private set; }
 
         #endregion
 
         #region Executes
 
-        private void LoadMapsExecute()
+        private void ChangeLoadProcessExecute(LoadProcessStates? newState)
         {
-            Load();
+            if (newState == null)
+                return;
+
+            CurrentState = newState.Value;
         }
 
         #endregion
 
         #endregion
-
-
     }
 }

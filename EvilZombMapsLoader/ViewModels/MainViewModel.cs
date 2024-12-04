@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -31,6 +32,16 @@ namespace EvilZombMapsLoader.ViewModels
         #endregion
 
         #region Props
+
+        public string Title
+        {
+            get
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var assemblyVersion = assembly.GetName().Version;
+                return string.Format(Localization.strings.MainTitle, assemblyVersion.Major, assemblyVersion.Minor, assemblyVersion.Build);
+            }
+        }
 
         public bool CanLoad
         {

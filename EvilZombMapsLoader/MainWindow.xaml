@@ -7,7 +7,7 @@
         xmlns:items="clr-namespace:EvilZombMapsLoader.ViewModels.Items"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:EvilZombMapsLoader.ViewModels"
-        Title="EvilZOMB - Maps Info (by CauMoH)"
+        Title="{Binding Title}"
         Width="1150"
         Height="900"
         d:DataContext="{d:DesignInstance viewModels:MainViewModel}"

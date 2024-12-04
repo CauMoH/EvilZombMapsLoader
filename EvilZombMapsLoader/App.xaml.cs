@@ -13,7 +13,7 @@ namespace EvilZombMapsLoader
 
         private void App_OnStartup(object sender, StartupEventArgs e)
         {
-            _mainWindow = new MainWindow()
+            _mainWindow = new MainWindow
             {
                 DataContext = _mainViewModel
             };

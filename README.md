@@ -1,4 +1,4 @@
-#EvilZOMB Maps Info
+# EvilZOMB Maps Info
 
 Мини приложение для просмотра актуальных карт сервера CS 1.6 https://evilzomb.ru/
 

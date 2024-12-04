@@ -1,11 +1,15 @@
-#define PRODUCT_NAME "EvilZombMapsLoader"
+#define PRODUCT_NAME "EvilZOMB Maps Info"
 #define PRODUCT_PUBLISHER "CauMoH"
-#define APPLICATION_VERSION "1.0"
 #define PRODUCT_EXE "EvilZombMapsLoader.exe"
         
 #define ReleaseDir "..\bin\Release"
+#define ICON "..\icon.ico"
 
 #define NetFramework "ndp48-x86-x64-allos-enu.exe"
+
+; Версия со всеми числами
+#define TEMP_VERSION GetFileVersion(ReleaseDir + "\" + PRODUCT_EXE)
+#define APPLICATION_VERSION Copy(TEMP_VERSION, 0, RPos(".", TEMP_VERSION) - 1)
 
 [Setup]
 AppId={{2C545FC7-E6DB-45AE-9006-8EBFF73F9F82}}
@@ -16,15 +20,16 @@ DefaultDirName={pf}\{#PRODUCT_NAME}
 DefaultGroupName={#PRODUCT_NAME} 
 AllowNoIcons=no
 OutputDir="..\Setup"
-OutputBaseFilename={#PRODUCT_NAME}  вер. {#APPLICATION_VERSION}
+OutputBaseFilename={#PRODUCT_NAME} вер. {#APPLICATION_VERSION}
 Compression=lzma
 SolidCompression=yes
 LanguageDetectionMethod=none
 UsePreviousTasks=no
-PrivilegesRequired=admin
 CloseApplications=yes
 DisableWelcomePage=false  
 UsePreviousLanguage=no  
+SetupIconFile={#ICON}
+UninstallDisplayIcon={#ICON}
 
 [Languages]
 Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"

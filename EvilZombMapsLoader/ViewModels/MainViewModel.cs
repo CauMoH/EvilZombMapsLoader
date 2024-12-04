@@ -77,15 +77,17 @@ namespace EvilZombMapsLoader.ViewModels
 
                     var rows = mapsDoc.DocumentNode.SelectNodes("//table[@class='data-table']//tr//td[@class='bg2']//a");
 
-                    foreach (var row in rows)
+                    for (var index = 0; index < rows.Count; index++)
                     {
+                        var row = rows[index];
                         var mapName = row.InnerText;
 
                         var isIgnore = _ignoreMaps.Any(ignoreMap => mapName.Contains(ignoreMap));
-                        if(isIgnore)
+                        if (isIgnore)
                             continue;
 
-                        var mapPage = BaseUrlStr + row.GetAttributeValue("href", string.Empty).Replace("amp;", string.Empty);
+                        var mapPage = BaseUrlStr +
+                                      row.GetAttributeValue("href", string.Empty).Replace("amp;", string.Empty);
                         var mapDoc = _htmlWeb.Load(mapPage);
                         var imageNode = mapDoc.DocumentNode.SelectSingleNode($"//img[@alt='{mapName}']");
                         var imageUrl = string.Empty;
@@ -94,23 +96,15 @@ namespace EvilZombMapsLoader.ViewModels
                             imageUrl = BaseUrlStr + imageNode.GetAttributeValue("src", string.Empty).TrimStart('.');
                         }
 
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            MapsCounter++;
-                        });
+                        Application.Current.Dispatcher.Invoke(() => { MapsCounter++; });
 
                         if (imageUrl.Contains(NoMapImage))
                         {
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                NoMapImageCounter++;
-                            });
+                            Application.Current.Dispatcher.Invoke(() => { NoMapImageCounter++; });
                         }
 
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            Maps.Add(new MapItem(mapName, imageUrl));
-                        });
+                        var index1 = index;
+                        Application.Current.Dispatcher.Invoke(() => { Maps.Add(new MapItem(index1 + 1, mapName, imageUrl)); });
                     }
                 }
                 catch

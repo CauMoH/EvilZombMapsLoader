@@ -15,6 +15,8 @@ namespace EvilZombMapsLoader.ViewModels.Items
 
         #region Props
 
+        public int Index { get; }
+
         public string Name { get; }
 
         public BitmapImage Image
@@ -25,8 +27,9 @@ namespace EvilZombMapsLoader.ViewModels.Items
 
         #endregion
 
-        public MapItem(string name, string imageUrl)
+        public MapItem(int index, string name, string imageUrl)
         {
+            Index = index;
             Name = name;
             _imageUrl = imageUrl;
 

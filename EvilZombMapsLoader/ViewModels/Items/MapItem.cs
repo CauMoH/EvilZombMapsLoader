@@ -1,4 +1,5 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System;
+using System.Windows.Media.Imaging;
 using EvilZombMapsLoader.Helpers;
 using Prism.Mvvm;
 
@@ -25,15 +26,25 @@ namespace EvilZombMapsLoader.ViewModels.Items
             private set => SetProperty(ref _image, value);
         }
 
+        public bool DefaultImage { get; }
+
         #endregion
 
-        public MapItem(int index, string name, string imageUrl)
+        public MapItem(int index, string name, string imageUrl, bool defaultImage = false)
         {
             Index = index;
             Name = name;
             _imageUrl = imageUrl;
+            DefaultImage = defaultImage;
 
             LoadImage();
+        }
+
+        public MapItem(int index, string name, BitmapImage image)
+        {
+            Index = index;
+            Name = name;
+            Image = image;
         }
 
         private async void LoadImage()
@@ -41,7 +52,14 @@ namespace EvilZombMapsLoader.ViewModels.Items
             if (!string.IsNullOrWhiteSpace(_imageUrl))
             {
                 Image = await ImageHelper.GetBitmapFromUrl(_imageUrl);
+                ImageLoaded?.Invoke(this, Image);
             }
         }
+
+        #region Events
+
+        public event EventHandler<BitmapImage> ImageLoaded;
+
+        #endregion
     }
 }

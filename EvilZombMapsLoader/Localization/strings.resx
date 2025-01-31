@@ -135,4 +135,7 @@
   <data name="CurrentState" xml:space="preserve">
     <value>Текущее состояние: {0}</value>
   </data>
+  <data name="DeleteSavedData" xml:space="preserve">
+    <value>Очистить кеш</value>
+  </data>
 </root>

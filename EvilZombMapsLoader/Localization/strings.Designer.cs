@@ -79,6 +79,15 @@ namespace EvilZombMapsLoader.Localization {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Очистить кеш.
+        /// </summary>
+        public static string DeleteSavedData {
+            get {
+                return ResourceManager.GetString("DeleteSavedData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Загрузить.
         /// </summary>
         public static string Load {

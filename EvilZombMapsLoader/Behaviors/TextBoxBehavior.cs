@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.Xaml.Behaviors;
 
@@ -19,6 +21,15 @@ namespace EvilZombMapsLoader.Behaviors
         private void AssociatedObject_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             AssociatedObject.SelectAll();
+
+            try
+            {
+                Clipboard.SetText(AssociatedObject.Text);
+            }
+            catch
+            {
+                //ignore
+            }
         }
     }
 }

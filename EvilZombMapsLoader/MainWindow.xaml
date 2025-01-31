@@ -49,6 +49,22 @@
                     </Button.Style>
                 </Button>
 
+                <Button Margin="10,0,0,0"
+                        Padding="5,0,5,0"
+                        HorizontalAlignment="Left"
+                        Command="{Binding DeleteSavedDataCommand}"
+                        Content="{x:Static localization:strings.DeleteSavedData}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentState}" Value="{x:Static enums:LoadProcessStates.Loading}">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
                 <ProgressBar Width="200"
                              Margin="10,0,0,0"
                              Maximum="{Binding NumberMapsToDownload}"

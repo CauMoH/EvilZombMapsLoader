@@ -102,6 +102,9 @@
     </Compile>
     <Compile Include="ViewModels\Items\MapItem.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="Xml\MapXmlItem.cs" />
+    <Compile Include="Xml\MapRoot.cs" />
+    <Compile Include="Xml\XmlParser.cs" />
     <Page Include="Dictionary\Dictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

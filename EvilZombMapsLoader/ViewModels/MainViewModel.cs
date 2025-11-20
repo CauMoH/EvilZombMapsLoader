@@ -1,20 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using EvilZombMapsLoader.Enums;
+﻿using EvilZombMapsLoader.Enums;
 using EvilZombMapsLoader.Helpers;
 using EvilZombMapsLoader.ViewModels.Items;
 using EvilZombMapsLoader.Xml;
 using HtmlAgilityPack;
 using Prism.Commands;
 using Prism.Mvvm;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace EvilZombMapsLoader.ViewModels
 {
@@ -44,6 +45,11 @@ namespace EvilZombMapsLoader.ViewModels
         private List<MapXmlItem> _mapsInfos = new List<MapXmlItem>();
 
         private readonly object _locker = new object();
+
+        private string _searchText;
+        private CancellationTokenSource _cts;
+
+        private readonly List<MapItem> _allMaps = new List<MapItem>();
 
         #endregion
 
@@ -98,8 +104,14 @@ namespace EvilZombMapsLoader.ViewModels
 
         private static string MapsXmlFilePath => GetFilePath(MapsXmlFileName);
 
+        public string SearchText
+        {
+            get => _searchText;
+            set => SetProperty(ref _searchText, value, TextChanged);
+        }
+        
         #endregion
-
+        
         public MainViewModel()
         {
             InitCommands();
@@ -149,6 +161,7 @@ namespace EvilZombMapsLoader.ViewModels
 
         private async void Load()
         {
+            _allMaps.Clear();
             Maps.Clear();
             MapsWithoutImages = 0;
             NumberMapsToDownload = 1;
@@ -195,13 +208,16 @@ namespace EvilZombMapsLoader.ViewModels
                         }
 
                         var index1 = index;
-
+                        
                         var mapInfo = _mapsInfos.FirstOrDefault(mi => mi.MapName == mapName);
                         if (mapInfo != null && mapInfo.ImageLoaded && GetMapImage(mapName, out var image))
                         {
+                            var map = new MapItem(index1 + 1, mapName, image);
+                            _allMaps.Add(map);
+
                             UiInvoker.Invoke(() =>
                             {
-                                Maps.Add(new MapItem(index1 + 1, mapName, image));
+                                Maps.Add(map);
                             });
                         }
                         else
@@ -227,12 +243,14 @@ namespace EvilZombMapsLoader.ViewModels
                                     MapsWithoutImages++;
                                 });
                             }
-                            
+
+                            var map = new MapItem(index1 + 1, mapName, imageUrl, defaultImage);
+                            _allMaps.Add(map);
+
                             UiInvoker.Invoke(() =>
                             {
-                                var newMap = new MapItem(index1 + 1, mapName, imageUrl, defaultImage);
-                                newMap.ImageLoaded += NewMap_OnImageLoaded;
-                                Maps.Add(newMap);
+                                map.ImageLoaded += NewMap_OnImageLoaded;
+                                Maps.Add(map);
                             });
                         }
                         
@@ -341,6 +359,61 @@ namespace EvilZombMapsLoader.ViewModels
             catch
             {
                 //ignore
+            }
+        }
+
+        private async void TextChanged()
+        {
+            // Отменяем предыдущую задачу, если юзер продолжает печатать
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
+
+            try
+            {
+                // Задержка — debounce
+                await Task.Delay(300, token);
+
+                // Если токен отменён — выходим
+                if (token.IsCancellationRequested)
+                    return;
+
+                ApplyFilter();
+            }
+            catch (TaskCanceledException)
+            {
+                // Нормальная ситуация: предыдущий ввод перебит новым
+            }
+        }
+
+        private void ApplyFilter()
+        {
+            if (_allMaps == null || _allMaps.Count == 0)
+                return;
+
+            var query = SearchText?.Trim() ?? "";
+
+            Maps.Clear();
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                foreach (var mapItem in _allMaps)
+                {
+                    Maps.Add(mapItem);
+                }
+            }
+            else
+            {
+                var filtered = string.IsNullOrWhiteSpace(query)
+                    ? _allMaps
+                    : _allMaps
+                        .Where(m => m.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+
+                foreach (var m in filtered)
+                {
+                    Maps.Add(m);
+                }
             }
         }
 

@@ -138,4 +138,7 @@
   <data name="DeleteSavedData" xml:space="preserve">
     <value>Очистить кеш</value>
   </data>
+  <data name="Search" xml:space="preserve">
+    <value>Поиск:</value>
+  </data>
 </root>

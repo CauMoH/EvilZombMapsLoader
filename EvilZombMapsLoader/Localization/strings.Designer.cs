@@ -122,5 +122,14 @@ namespace EvilZombMapsLoader.Localization {
                 return ResourceManager.GetString("MapsNoImageCount", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Поиск:.
+        /// </summary>
+        public static string Search {
+            get {
+                return ResourceManager.GetString("Search", resourceCulture);
+            }
+        }
     }
 }

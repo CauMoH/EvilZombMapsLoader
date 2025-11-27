@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
@@ -8,50 +9,65 @@ namespace EvilZombMapsLoader.Helpers
 {
     public static class ImageHelper
     {
-        public static async Task<BitmapImage> GetBitmapFromUrl(string url)
+        // HttpClient переиспользуем — это правильно
+        private static readonly HttpClient _http = new HttpClient
         {
-            return await Task.Run(() =>
+            Timeout = TimeSpan.FromSeconds(10) // не зависает навсегда
+        };
+
+        public static async Task<BitmapImage> GetBitmapFromUrl(string url, CancellationToken token = default)
+        {
+            try
             {
-                try
-                {
-                    var image = new BitmapImage();
-                    int BytesToRead = 100;
-
-                    if (url.Contains("?ava=1"))
-                    {
-                        url = url.Replace("?ava=1", "");
-                    }
-
-                    WebRequest request = WebRequest.Create(new Uri(url));
-                    request.Timeout = -1;
-                    WebResponse response = request.GetResponse();
-                    Stream responseStream = response.GetResponseStream();
-                    BinaryReader reader = new BinaryReader(responseStream);
-                    MemoryStream memoryStream = new MemoryStream();
-
-                    byte[] bytebuffer = new byte[BytesToRead];
-                    int bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-
-                    while (bytesRead > 0)
-                    {
-                        memoryStream.Write(bytebuffer, 0, bytesRead);
-                        bytesRead = reader.Read(bytebuffer, 0, BytesToRead);
-                    }
-
-                    image.BeginInit();
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-
-                    image.StreamSource = memoryStream;
-                    image.EndInit();
-                    image.Freeze();
-
-                    return image;
-                }
-                catch (Exception e)
-                {
+                if (string.IsNullOrWhiteSpace(url))
                     return null;
+
+                if (url.Contains("?ava=1"))
+                    url = url.Replace("?ava=1", "");
+
+                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                using (var response = await _http.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseContentRead,
+                    token))
+                {
+                    if (!response.IsSuccessStatusCode)
+                        return null;
+
+                    // Читаем байты вручную, но корректно для .NET Framework
+                    var bytes = await response.Content.ReadAsByteArrayAsync();
+
+                    return CreateBitmap(bytes);
                 }
-            });
+            }
+            catch (TaskCanceledException)
+            {
+                // Отмена или таймаут — возврат null, но без зависаний
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static BitmapImage CreateBitmap(byte[] bytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return null;
+
+            var image = new BitmapImage();
+
+            using (var ms = new MemoryStream(bytes))
+            {
+                image.BeginInit();
+                image.StreamSource = ms;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.EndInit();
+            }
+
+            image.Freeze();
+            return image;
         }
     }
 }

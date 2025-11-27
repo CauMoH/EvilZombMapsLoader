@@ -26,7 +26,7 @@ namespace EvilZombMapsLoader.ViewModels.Items
             private set => SetProperty(ref _image, value);
         }
 
-        public bool DefaultImage { get; }
+        public bool DefaultImage { get; private set; }
 
         #endregion
 
@@ -52,6 +52,12 @@ namespace EvilZombMapsLoader.ViewModels.Items
             if (!string.IsNullOrWhiteSpace(_imageUrl))
             {
                 Image = await ImageHelper.GetBitmapFromUrl(_imageUrl);
+                if (Image == null)
+                {
+                    DefaultImage = true;
+                    return;
+                }
+
                 ImageLoaded?.Invoke(this, Image);
             }
         }

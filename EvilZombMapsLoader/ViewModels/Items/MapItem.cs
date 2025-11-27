@@ -25,17 +25,14 @@ namespace EvilZombMapsLoader.ViewModels.Items
             get => _image;
             private set => SetProperty(ref _image, value);
         }
-
-        public bool DefaultImage { get; private set; }
-
+        
         #endregion
 
-        public MapItem(int index, string name, string imageUrl, bool defaultImage = false)
+        public MapItem(int index, string name, string imageUrl)
         {
             Index = index;
             Name = name;
             _imageUrl = imageUrl;
-            DefaultImage = defaultImage;
 
             LoadImage();
         }
@@ -54,7 +51,8 @@ namespace EvilZombMapsLoader.ViewModels.Items
                 Image = await ImageHelper.GetBitmapFromUrl(_imageUrl);
                 if (Image == null)
                 {
-                    DefaultImage = true;
+                    Image = LoadDefaultImage();
+                    ImageError?.Invoke(this, EventArgs.Empty);
                     return;
                 }
 
@@ -62,9 +60,25 @@ namespace EvilZombMapsLoader.ViewModels.Items
             }
         }
 
+        private BitmapImage LoadDefaultImage()
+        {
+            try
+            {
+                var uri = new Uri("pack://application:,,,/Img/nomap.png");
+                var img = new BitmapImage(uri);
+                img.Freeze();
+                return img;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         #region Events
 
         public event EventHandler<BitmapImage> ImageLoaded;
+        public event EventHandler<EventArgs> ImageError;
 
         #endregion
     }

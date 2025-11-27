@@ -11,7 +11,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -25,8 +24,8 @@ namespace EvilZombMapsLoader.ViewModels
 
         private const string PhpPath = "/hlstats.php?";
         private const string BaseUrlStr = "https://evilzomb.myarena.site";
+        private const string MapBaseUrl = BaseUrlStr + "/hlstatsimg/games/cstrike/maps/";
         private const string MapsPageStr = "mode=maps&game=cstrike";
-        private const string NoMapImage = "nomap.png";
         private readonly List<string> _ignoreMaps = new List<string>
         {
             "(Unaccounted)"
@@ -41,6 +40,7 @@ namespace EvilZombMapsLoader.ViewModels
         private const string MapsXmlFileName = "data.xml";
         private const string MapImagesFolder = "images";
         private const string ImageExtension = ".png";
+        private const string ServerImageExtension = ".jpg";
 
         private List<MapXmlItem> _mapsInfos = new List<MapXmlItem>();
 
@@ -222,34 +222,14 @@ namespace EvilZombMapsLoader.ViewModels
                         }
                         else
                         {
-                            var mapPage = BaseUrlStr +
-                                          row.GetAttributeValue("href", string.Empty).Replace("amp;", string.Empty);
-                            var mapDoc = _htmlWeb.Load(mapPage);
-                            var imageNode = mapDoc.DocumentNode.SelectSingleNode($"//img[@alt='{mapName}']");
-                            var imageUrl = string.Empty;
-                            if (imageNode != null)
-                            {
-                                imageUrl = BaseUrlStr + imageNode.GetAttributeValue("src", string.Empty).TrimStart('.');
-                            }
-
-                            var defaultImage = false;
-
-                            if (imageUrl.Contains(NoMapImage))
-                            {
-                                defaultImage = true;
-
-                                UiInvoker.Invoke(() =>
-                                {
-                                    MapsWithoutImages++;
-                                });
-                            }
-
-                            var map = new MapItem(index1 + 1, mapName, imageUrl, defaultImage);
+                            var imageUrl = MapBaseUrl + mapName + ServerImageExtension;
+                            var map = new MapItem(index1 + 1, mapName, imageUrl);
                             _allMaps.Add(map);
 
                             UiInvoker.Invoke(() =>
                             {
                                 map.ImageLoaded += NewMap_OnImageLoaded;
+                                map.ImageError += NewMap_OnImageError;
                                 Maps.Add(map);
                             });
                         }
@@ -323,7 +303,7 @@ namespace EvilZombMapsLoader.ViewModels
         {
             try
             {
-                if (mapItem.Image == null || mapItem.DefaultImage)
+                if (mapItem.Image == null)
                 {
                     return;
                 }
@@ -439,6 +419,26 @@ namespace EvilZombMapsLoader.ViewModels
                 {
                     mapItem.ImageLoaded -= NewMap_OnImageLoaded;
                     SaveMapImage(mapItem);
+                }
+            }
+            catch
+            {
+                //ignore
+            }
+        }
+
+        private void NewMap_OnImageError(object sender, EventArgs e)
+        {
+            try
+            {
+                if (sender is MapItem mapItem)
+                {
+                    mapItem.ImageError -= NewMap_OnImageError;
+
+                    UiInvoker.Invoke(() =>
+                    {
+                        MapsWithoutImages++;
+                    });
                 }
             }
             catch
